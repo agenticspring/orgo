@@ -12,9 +12,3 @@ Cek mining:
 tail -f ~/seine.log
 pgrep -x seine
 ```
-
-Atur jumlah thread (default 2):
-
-```bash
-THREADS=4 ./orgo.sh
-```
